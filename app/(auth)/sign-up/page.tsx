@@ -46,6 +46,7 @@ const SignUp = () => {
   async function handleOnSubmit(values: SignupFormData) {
     try {
       setLoading(true);
+      console.log('Submitting:', values);
 
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -58,13 +59,18 @@ const SignUp = () => {
       });
 
       const data = await res.json();
+      console.log('Response:', { status: res.status, data });
 
-      if (!res.ok) throw new Error(data.message || 'something went wrong');
+      if (!res.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
 
       toast.success('Account created successfully!');
       form.reset();
+
       router.push('/sign-in');
     } catch (error) {
+      console.error('Submit error:', error);
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
@@ -74,7 +80,6 @@ const SignUp = () => {
       setLoading(false);
     }
   }
-
   return (
     <div className='min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4'>
       <Card className='max-w-md w-full shadow-xl'>
