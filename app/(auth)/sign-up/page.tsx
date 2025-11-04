@@ -21,11 +21,11 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { signUpSchema } from '@/lib/schema/signUp.schema';
+import Link from 'next/link';
 
 export type SignupFormData = z.infer<typeof signUpSchema>;
 
@@ -167,7 +167,7 @@ const SignUp = () => {
           <CardFooter className='flex items-center justify-center mt-6'>
             <div className='flex items-center justify-center'>
               <p className='text-sm text-muted-foreground'>
-                Already have an account? <Link to='/sign-in'>Sign in</Link>
+                Already have an account? <Link href='/sign-in'>Sign in</Link>
               </p>
             </div>
           </CardFooter>
