@@ -1,4 +1,7 @@
-import React from 'react';
+import HeaderLogo from '@/components/atoms/header/HeaderLogo';
+import UserButton from '@/components/atoms/header/UserButton';
+import Navigation from '@/components/molecules/header/Navigation';
+import WelcomeMsg from '@/components/molecules/header/WelcomeMsg';
 
 const Header = () => {
   return (
@@ -7,8 +10,11 @@ const Header = () => {
         <div className='w-full flex items-center justify-between mb-14'>
           <div className='flex items-center lg:gap-x-16'>
             <HeaderLogo />
+            <Navigation />
           </div>
+          <UserButton />
         </div>
+        <WelcomeMsg />
       </div>
     </header>
   );
