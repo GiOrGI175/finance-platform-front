@@ -11,6 +11,7 @@ import {
 import AccountForm, { FormValues } from './AccountForm';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { useAuthStore } from '@/store/authStore';
 
 const NewAccount = ({
   id,
@@ -23,8 +24,8 @@ const NewAccount = ({
   const setClose = useNewAccount((state) => state.setClose);
 
   const [loading, setLoading] = useState(false);
-  const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+  const token = useAuthStore((state) => state.token);
 
   const onSubmit = async (values: FormValues) => {
     try {
