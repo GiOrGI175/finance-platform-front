@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import Actions from '@/components/atoms/accounts/Actions';
 
 export type AccountRow = {
   _id: string;
@@ -55,5 +56,9 @@ export const columns: ColumnDef<AccountRow>[] = [
         </Button>
       );
     },
+  },
+  {
+    id: 'acctions',
+    cell: ({ row }) => <Actions id={row.original._id} />,
   },
 ];

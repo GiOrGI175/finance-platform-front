@@ -14,9 +14,11 @@ interface AccountState {
   createLoading: boolean;
   fetchAccounts: () => Promise<void>;
   createAccount: (values: { name: string; plaidId?: string }) => Promise<void>;
-  addAccount: (account: Account) => void;
-  //   deleteAccount: (id: string) => void;
-  //   updateAccount: (account: Account) => void;
+  deleteAccounts: (ids: string[]) => void;
+  updateAccount: (
+    id: string,
+    values: Partial<{ name: string; plaidId?: string }>
+  ) => Promise<void>;
 }
 
 export const useAccountStore = create<AccountState>((set, get) => ({
@@ -74,18 +76,54 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     }
   },
 
-  addAccount: (account) =>
-    set((state) => ({ accounts: [...state.accounts, account] })),
+  deleteAccounts: async (ids) => {
+    console.log(ids, 'ids');
+    try {
+      set((state) => ({
+        accounts: state.accounts.filter((acc) => !ids.includes(acc._id)),
+      }));
 
-  //   deleteAccount: (id) =>
-  //     set((state) => ({
-  //       accounts: state.accounts.filter((acc) => acc._id !== id),
-  //     })),
+      for (const id of ids) {
+        const res = await fetch(`/api/accounts/${id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
 
-  //   updateAccount: (updated) =>
-  //     set((state) => ({
-  //       accounts: state.accounts.map((acc) =>
-  //         acc._id === updated._id ? updated : acc
-  //       ),
-  //     })),
+        if (!res.ok) throw new Error(`Failed to delete account: ${id}`);
+      }
+
+      toast.success(
+        `${ids.length} account${ids.length > 1 ? 's' : ''} deleted`
+      );
+    } catch (error) {
+      toast.error('Failed to delete accounts');
+    }
+  },
+
+  updateAccount: async (id, values) => {
+    try {
+      const res = await fetch(`/api/accounts/${id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
+
+      if (!res.ok) throw new Error('Failed to update account');
+
+      const data = await res.json();
+
+      // update the account in the local store
+      set((state) => ({
+        accounts: state.accounts.map((acc) =>
+          acc._id === id ? data.account : acc
+        ),
+      }));
+
+      toast.success('Account updated successfully!');
+    } catch (error) {
+      console.error('updateAccount error:', error);
+      toast.error('Failed to update account');
+    }
+  },
 }));
