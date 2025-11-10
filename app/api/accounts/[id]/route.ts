@@ -3,6 +3,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { accountSchema } from '@/lib/schema/account.shcema';
 import { connectDB } from '@/lib/mongodb';
 import Account from '@/lib/model/Account';
+import { cookies } from 'next/headers';
 
 interface DecodedToken extends JwtPayload {
   id: string;
@@ -14,12 +15,13 @@ export async function PATCH(
 ) {
   try {
     const { id } = params;
-    const authHeader = req.headers.get('authorization');
 
-    if (!authHeader?.startsWith('Bearer '))
+    const copkieStore = await cookies();
+    const token = copkieStore.get('token')?.value;
+
+    if (!token)
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-    const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
 
     if (!decoded?.id) {
@@ -59,11 +61,13 @@ export async function DELETE(
 ) {
   try {
     const { id } = params;
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer '))
+
+    const copkieStore = await cookies();
+    const token = copkieStore.get('token')?.value;
+
+    if (!token)
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-    const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
 
     if (!decoded?.id) {

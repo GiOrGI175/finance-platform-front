@@ -63,7 +63,7 @@ export default function SignIn() {
         throw new Error(data.message || 'Invalid credentials');
       }
 
-      setAuth(data.token, data.user);
+      setAuth(data.user);
 
       toast.success('Login successful!');
       router.push('/');

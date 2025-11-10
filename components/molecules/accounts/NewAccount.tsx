@@ -12,6 +12,7 @@ import AccountForm, { FormValues } from './AccountForm';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { useAccountStore } from '@/store/useAccountStore';
 
 const NewAccount = ({
   id,
@@ -22,51 +23,19 @@ const NewAccount = ({
 }) => {
   const isOpen = useNewAccount((state) => state.isOpen);
   const setClose = useNewAccount((state) => state.setClose);
+  const createAccount = useAccountStore((state) => state.createAccount);
+  const createLoading = useAccountStore((state) => state.createLoading);
 
-  const [loading, setLoading] = useState(false);
-
-  const token = useAuthStore((state) => state.token);
-
-  const onSubmit = async (values: FormValues) => {
-    try {
-      setLoading(true);
-
-      const url = id ? `/api/accounts/${id}` : '/api/accounts';
-      const method = id ? 'PATCH' : 'POST';
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(values),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.message || 'Request failed');
-
-      toast.success(id ? 'Account updated!' : 'Account created!');
-      setClose();
-    } catch (error: any) {
-      console.error('Account request error:', error);
-      toast.error(error.message || 'Something went wrong');
-    } finally {
-      setLoading(false);
-    }
+  const onSubmit = async (values: { name: string; plaidId?: string }) => {
+    await createAccount(values);
+    setClose();
   };
 
   const handleDelete = async () => {
     if (!id) return;
     try {
-      setLoading(true);
-
       const res = await fetch(`/api/accounts/${id}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       if (!res.ok) throw new Error('Failed to delete account');
@@ -74,8 +43,6 @@ const NewAccount = ({
       setClose();
     } catch (err: any) {
       toast.error(err.message || 'Something went wrong');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -95,7 +62,7 @@ const NewAccount = ({
           id={id}
           onSubmit={onSubmit}
           onDelete={handleDelete}
-          disabled={loading}
+          disabled={createLoading}
           defaultValues={defaultValues || { name: '', plaidId: '' }}
         />
       </SheetContent>

@@ -3,6 +3,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { connectDB } from '@/lib/mongodb';
 import Account from '@/lib/model/Account';
 import { accountSchema } from '@/lib/schema/account.shcema';
+import { cookies } from 'next/headers';
 
 interface DecodedToken extends JwtPayload {
   id: string;
@@ -10,11 +11,12 @@ interface DecodedToken extends JwtPayload {
 
 export async function POST(req: Request) {
   try {
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer '))
+    const copkieStore = await cookies();
+    const token = copkieStore.get('token')?.value;
+
+    if (!token)
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-    const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
 
     if (!decoded?.id) {
@@ -52,6 +54,34 @@ export async function POST(req: Request) {
       );
     }
 
+    return NextResponse.json({ message: 'Server error' }, { status: 500 });
+  }
+}
+
+export async function GET(req: Request) {
+  try {
+    const copkieStore = await cookies();
+    const token = copkieStore.get('token')?.value;
+
+    if (!token)
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
+
+    if (!decoded?.id) {
+      return NextResponse.json(
+        { message: 'Invalid token payload' },
+        { status: 401 }
+      );
+    }
+
+    await connectDB();
+
+    const accounts = await Account.find({ userId: decoded.id });
+
+    return NextResponse.json({ accounts }, { status: 200 });
+  } catch (error) {
+    console.error('GET /accounts error:', error);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });
   }
 }
