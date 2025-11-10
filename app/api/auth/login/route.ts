@@ -44,8 +44,12 @@ export async function POST(req: Request) {
       },
     });
 
-    res.cookies.set('token', token, {
+    res.cookies.set({
+      name: 'token',
+      value: token,
       httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
       maxAge: 60 * 60 * 24 * 7,
       path: '/',
     });
