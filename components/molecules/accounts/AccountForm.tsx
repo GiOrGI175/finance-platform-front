@@ -40,7 +40,9 @@ const AccountForm = ({
     onSubmit(values);
   };
 
-  const handleDelete = () => {};
+  const handleDelete = () => {
+    onDelete?.();
+  };
 
   return (
     <Form {...form}>

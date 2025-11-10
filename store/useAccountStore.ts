@@ -15,7 +15,10 @@ interface AccountState {
   fetchAccounts: () => Promise<void>;
   createAccount: (values: { name: string; plaidId?: string }) => Promise<void>;
   deleteAccounts: (ids: string[]) => void;
-  //   updateAccount: (account: Account) => void;
+  updateAccount: (
+    id: string,
+    values: Partial<{ name: string; plaidId?: string }>
+  ) => Promise<void>;
 }
 
 export const useAccountStore = create<AccountState>((set, get) => ({
@@ -97,10 +100,30 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     }
   },
 
-  //   updateAccount: (updated) =>
-  //     set((state) => ({
-  //       accounts: state.accounts.map((acc) =>
-  //         acc._id === updated._id ? updated : acc
-  //       ),
-  //     })),
+  updateAccount: async (id, values) => {
+    try {
+      const res = await fetch(`/api/accounts/${id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
+
+      if (!res.ok) throw new Error('Failed to update account');
+
+      const data = await res.json();
+
+      // update the account in the local store
+      set((state) => ({
+        accounts: state.accounts.map((acc) =>
+          acc._id === id ? data.account : acc
+        ),
+      }));
+
+      toast.success('Account updated successfully!');
+    } catch (error) {
+      console.error('updateAccount error:', error);
+      toast.error('Failed to update account');
+    }
+  },
 }));
