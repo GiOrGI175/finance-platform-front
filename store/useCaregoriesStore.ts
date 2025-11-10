@@ -1,36 +1,39 @@
 import { toast } from 'sonner';
 import { create } from 'zustand';
 
-interface Account {
+interface Categories {
   _id: string;
   name: string;
   plaidId?: string;
   userId: string;
 }
 
-interface AccountState {
-  accounts: Account[];
+interface CategoriesState {
+  categories: Categories[];
   loading: boolean;
   createLoading: boolean;
-  fetchAccounts: () => Promise<void>;
-  createAccount: (values: { name: string; plaidId?: string }) => Promise<void>;
-  deleteAccounts: (ids: string[]) => void;
-  updateAccount: (
+  fetchCategories: () => Promise<void>;
+  createCategories: (values: {
+    name: string;
+    plaidId?: string;
+  }) => Promise<void>;
+  deleteCategories: (ids: string[]) => void;
+  updateCategories: (
     id: string,
     values: Partial<{ name: string; plaidId?: string }>
   ) => Promise<void>;
 }
 
-export const useAccountStore = create<AccountState>((set, get) => ({
-  accounts: [],
+export const useCategoriesStore = create<CategoriesState>((set, get) => ({
+  categories: [],
   loading: false,
   createLoading: false,
 
-  fetchAccounts: async () => {
+  fetchCategories: async () => {
     try {
       set({ loading: true });
 
-      const res = await fetch('/api/accounts', {
+      const res = await fetch('/api/categories', {
         method: 'GET',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -38,8 +41,8 @@ export const useAccountStore = create<AccountState>((set, get) => ({
 
       if (!res.ok) throw new Error('Failed to fetch accounts');
 
-      const { accounts } = await res.json();
-      set({ accounts });
+      const { categories } = await res.json();
+      set({ categories });
     } catch (error) {
       console.error('fetchAccounts error:', error);
       if (error instanceof Error) toast.error(error.message);
@@ -48,11 +51,11 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     }
   },
 
-  createAccount: async (values) => {
+  createCategories: async (values) => {
     try {
       set({ createLoading: true });
 
-      const res = await fetch('/api/accounts', {
+      const res = await fetch('/api/categories', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -64,27 +67,27 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       const data = await res.json();
 
       set((state) => ({
-        accounts: [...state.accounts, data.account],
+        categories: [...state.categories, data.categories],
       }));
 
-      toast.success('Account created successfully!');
+      toast.success('categories created successfully!');
     } catch (error) {
-      console.error('createAccount error:', error);
+      console.error('create categories error:', error);
       toast.error('Failed to create account');
     } finally {
       set({ createLoading: false });
     }
   },
 
-  deleteAccounts: async (ids) => {
+  deleteCategories: async (ids) => {
     console.log(ids, 'ids');
     try {
       set((state) => ({
-        accounts: state.accounts.filter((acc) => !ids.includes(acc._id)),
+        categories: state.categories.filter((ctg) => !ids.includes(ctg._id)),
       }));
 
       for (const id of ids) {
-        const res = await fetch(`/api/accounts/${id}`, {
+        const res = await fetch(`/api/categories/${id}`, {
           method: 'DELETE',
           credentials: 'include',
         });
@@ -93,16 +96,16 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       }
 
       toast.success(
-        `${ids.length} account${ids.length > 1 ? 's' : ''} deleted`
+        `${ids.length} categor${ids.length > 1 ? 'ies' : 'y'} deleted`
       );
     } catch (error) {
       toast.error('Failed to delete accounts');
     }
   },
 
-  updateAccount: async (id, values) => {
+  updateCategories: async (id, values) => {
     try {
-      const res = await fetch(`/api/accounts/${id}`, {
+      const res = await fetch(`/api/categories/${id}`, {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -114,14 +117,14 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       const data = await res.json();
 
       set((state) => ({
-        accounts: state.accounts.map((acc) =>
-          acc._id === id ? data.account : acc
+        categories: state.categories.map((ctg) =>
+          ctg._id === id ? data.account : ctg
         ),
       }));
 
-      toast.success('Account updated successfully!');
+      toast.success('categories updated successfully!');
     } catch (error) {
-      console.error('updateAccount error:', error);
+      console.error('update categories error:', error);
       toast.error('Failed to update account');
     }
   },

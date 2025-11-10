@@ -25,7 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import React from 'react';
-import { useConfirm } from '@/components/atoms/accounts/useConfrim';
+import { useConfirm } from '@/components/atoms/reusable_confrim/useConfrim';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

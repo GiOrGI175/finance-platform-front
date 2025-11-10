@@ -12,7 +12,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
-// ✅ lowercase hook name
 export const useConfirm = (
   title: string,
   message: string
@@ -21,7 +20,6 @@ export const useConfirm = (
     resolve: (value: boolean) => void;
   } | null>(null);
 
-  // ✅ properly typed promise
   const confirm = () =>
     new Promise<boolean>((resolve) => {
       setPromise({ resolve });

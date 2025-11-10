@@ -2,6 +2,7 @@
 
 import EditAccount from '@/components/molecules/accounts/EditAccount';
 import NewAccount from '@/components/molecules/accounts/NewAccount';
+import NewCategories from '@/components/molecules/categories/NewCategories';
 import { useMountedState } from 'react-use';
 
 const NewAccountProvaider = () => {
@@ -13,6 +14,8 @@ const NewAccountProvaider = () => {
     <>
       <NewAccount />
       <EditAccount />
+
+      <NewCategories />
     </>
   );
 };

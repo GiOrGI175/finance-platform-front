@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useNewAccount } from '@/store/newAccStore';
+import { useNewCategories } from '@/store/newCtgStore';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,16 +10,26 @@ import {
   DropdownMenuTrigger,
 } from '@radix-ui/react-dropdown-menu';
 import { Edit, MoreHorizontal } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 type Props = {
   id: string;
 };
 
 const Actions = ({ id }: Props) => {
-  const setOpenEdit = useNewAccount((state) => state.setOpenEdit);
+  const pathname = usePathname();
+  const openAccountEdit = useNewAccount((state) => state.setOpenEdit);
+  const openCategoryEdit = useNewCategories((state) => state.setOpenEdit);
 
-  //   console.log(id, 'id');
-
+  const handleEdit = () => {
+    if (pathname.includes('/categories')) {
+      openCategoryEdit(id);
+    } else if (pathname.includes('/accounts')) {
+      openAccountEdit(id);
+    } else {
+      console.warn('Unknown route — no edit modal found.');
+    }
+  };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -37,9 +48,7 @@ const Actions = ({ id }: Props) => {
       >
         <DropdownMenuItem
           disabled={false}
-          onClick={() => {
-            setOpenEdit(id);
-          }}
+          onClick={handleEdit}
           className='p-2 flex'
         >
           <Edit className='size-5 mr-2' />
