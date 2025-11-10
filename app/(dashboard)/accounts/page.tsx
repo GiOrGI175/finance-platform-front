@@ -24,6 +24,7 @@ const AccountsPage = () => {
   const fetchAccounts = useAccountStore((state) => state.fetchAccounts);
   const accounts = useAccountStore((state) => state.accounts);
   const loading = useAccountStore((state) => state.loading);
+  const deleteAccounts = useAccountStore((state) => state.deleteAccounts);
 
   const setOpen = useNewAccount((state) => state.setOpen);
 
@@ -67,7 +68,10 @@ const AccountsPage = () => {
             filterKey='name'
             columns={columns}
             data={accounts}
-            onDelete={() => {}}
+            onDelete={(row) => {
+              const ids = row.map((r) => r.original._id);
+              deleteAccounts(ids);
+            }}
             disabled={loading}
           />
         </CardContent>

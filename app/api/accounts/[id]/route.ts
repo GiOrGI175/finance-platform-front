@@ -9,15 +9,16 @@ interface DecodedToken extends JwtPayload {
   id: string;
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const { id } = params;
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
 
-    const copkieStore = await cookies();
-    const token = copkieStore.get('token')?.value;
+export async function PATCH(req: Request, context: RouteContext) {
+  try {
+    const { id } = await context.params;
+
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
 
     if (!token)
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -42,40 +43,34 @@ export async function PATCH(
       { new: true }
     );
 
-    if (!updated)
+    if (!updated) {
       return NextResponse.json(
         { message: 'Account not found' },
         { status: 404 }
       );
+    }
 
     return NextResponse.json({ message: 'Account updated', account: updated });
   } catch (error) {
-    console.error(error);
+    console.error('🔥 PATCH /accounts/[id] error:', error);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });
   }
 }
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { id } = params;
+  const { id } = await context.params;
 
-    const copkieStore = await cookies();
-    const token = copkieStore.get('token')?.value;
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
 
     if (!token)
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
-
-    if (!decoded?.id) {
-      return NextResponse.json(
-        { message: 'Invalid token payload' },
-        { status: 401 }
-      );
-    }
 
     await connectDB();
 
@@ -84,15 +79,16 @@ export async function DELETE(
       userId: decoded.id,
     });
 
-    if (!deleted)
+    if (!deleted) {
       return NextResponse.json(
         { message: 'Account not found' },
         { status: 404 }
       );
+    }
 
-    return NextResponse.json({ message: 'Account deleted' });
-  } catch (err: any) {
-    console.error(err);
+    return NextResponse.json({ message: 'Account deleted' }, { status: 200 });
+  } catch (err) {
+    console.error('🔥 Delete error:', err);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });
   }
 }

@@ -14,8 +14,7 @@ interface AccountState {
   createLoading: boolean;
   fetchAccounts: () => Promise<void>;
   createAccount: (values: { name: string; plaidId?: string }) => Promise<void>;
-  addAccount: (account: Account) => void;
-  //   deleteAccount: (id: string) => void;
+  deleteAccounts: (ids: string[]) => void;
   //   updateAccount: (account: Account) => void;
 }
 
@@ -74,13 +73,29 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     }
   },
 
-  addAccount: (account) =>
-    set((state) => ({ accounts: [...state.accounts, account] })),
+  deleteAccounts: async (ids) => {
+    console.log(ids, 'ids');
+    try {
+      set((state) => ({
+        accounts: state.accounts.filter((acc) => !ids.includes(acc._id)),
+      }));
 
-  //   deleteAccount: (id) =>
-  //     set((state) => ({
-  //       accounts: state.accounts.filter((acc) => acc._id !== id),
-  //     })),
+      for (const id of ids) {
+        const res = await fetch(`/api/accounts/${id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+
+        if (!res.ok) throw new Error(`Failed to delete account: ${id}`);
+      }
+
+      toast.success(
+        `${ids.length} account${ids.length > 1 ? 's' : ''} deleted`
+      );
+    } catch (error) {
+      toast.error('Failed to delete accounts');
+    }
+  },
 
   //   updateAccount: (updated) =>
   //     set((state) => ({
