@@ -4,10 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Plus } from 'lucide-react';
 
-import {
-  columns,
-  Payment,
-} from '@/components/molecules/reusable_table/columns';
+import { columns } from '@/components/molecules/reusable_table/columns';
 import { DataTable } from '@/components/organisms/reusable_table/DataTabel';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
