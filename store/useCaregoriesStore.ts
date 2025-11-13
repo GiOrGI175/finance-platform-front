@@ -1,7 +1,7 @@
 import { toast } from 'sonner';
 import { create } from 'zustand';
 
-interface Categories {
+interface Category {
   _id: string;
   name: string;
   plaidId?: string;
@@ -9,7 +9,7 @@ interface Categories {
 }
 
 interface CategoriesState {
-  categories: Categories[];
+  categories: Category[];
   loading: boolean;
   createLoading: boolean;
   fetchCategories: () => Promise<void>;
@@ -17,7 +17,7 @@ interface CategoriesState {
     name: string;
     plaidId?: string;
   }) => Promise<void>;
-  deleteCategories: (ids: string[]) => void;
+  deleteCategories: (ids: string[]) => Promise<void>;
   updateCategories: (
     id: string,
     values: Partial<{ name: string; plaidId?: string }>
@@ -39,12 +39,18 @@ export const useCategoriesStore = create<CategoriesState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
       });
 
-      if (!res.ok) throw new Error('Failed to fetch accounts');
+      if (!res.ok) throw new Error('Failed to fetch categories');
 
-      const { categories } = await res.json();
-      set({ categories });
+      const data = await res.json();
+      console.log('Categories fetched:', data);
+
+      set({
+        categories: Array.isArray(data.categories)
+          ? data.categories.filter(Boolean)
+          : [],
+      });
     } catch (error) {
-      console.error('fetchAccounts error:', error);
+      console.error('fetchCategories error:', error);
       if (error instanceof Error) toast.error(error.message);
     } finally {
       set({ loading: false });
@@ -62,28 +68,33 @@ export const useCategoriesStore = create<CategoriesState>((set, get) => ({
         body: JSON.stringify(values),
       });
 
-      if (!res.ok) throw new Error('Failed to create account');
+      if (!res.ok) throw new Error('Failed to create category');
 
       const data = await res.json();
+      console.log('Category created:', data);
 
       set((state) => ({
-        categories: [...state.categories, data.categories],
+        categories: [
+          ...state.categories.filter(Boolean),
+          data.category || data.categories,
+        ].filter(Boolean),
       }));
 
-      toast.success('categories created successfully!');
+      toast.success('Category created successfully!');
     } catch (error) {
-      console.error('create categories error:', error);
-      toast.error('Failed to create account');
+      console.error('createCategories error:', error);
+      toast.error('Failed to create category');
     } finally {
       set({ createLoading: false });
     }
   },
 
   deleteCategories: async (ids) => {
-    console.log(ids, 'ids');
     try {
+      console.log('🗑️ Deleting categories:', ids);
+
       set((state) => ({
-        categories: state.categories.filter((ctg) => !ids.includes(ctg._id)),
+        categories: state.categories.filter((c) => !ids.includes(c._id)),
       }));
 
       for (const id of ids) {
@@ -92,14 +103,15 @@ export const useCategoriesStore = create<CategoriesState>((set, get) => ({
           credentials: 'include',
         });
 
-        if (!res.ok) throw new Error(`Failed to delete account: ${id}`);
+        if (!res.ok) throw new Error(`Failed to delete category: ${id}`);
       }
 
       toast.success(
         `${ids.length} categor${ids.length > 1 ? 'ies' : 'y'} deleted`
       );
     } catch (error) {
-      toast.error('Failed to delete accounts');
+      console.error('deleteCategories error:', error);
+      toast.error('Failed to delete categories');
     }
   },
 
@@ -112,20 +124,21 @@ export const useCategoriesStore = create<CategoriesState>((set, get) => ({
         body: JSON.stringify(values),
       });
 
-      if (!res.ok) throw new Error('Failed to update account');
+      if (!res.ok) throw new Error('Failed to update category');
 
       const data = await res.json();
+      console.log('Updated category:', data);
 
       set((state) => ({
-        categories: state.categories.map((ctg) =>
-          ctg._id === id ? data.account : ctg
+        categories: state.categories.map((c) =>
+          c._id === id ? data.category || data.updatedCategory || c : c
         ),
       }));
 
-      toast.success('categories updated successfully!');
+      toast.success('Category updated successfully!');
     } catch (error) {
-      console.error('update categories error:', error);
-      toast.error('Failed to update account');
+      console.error('updateCategories error:', error);
+      toast.error('Failed to update category');
     }
   },
 }));

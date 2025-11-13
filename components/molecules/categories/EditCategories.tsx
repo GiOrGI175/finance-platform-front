@@ -30,6 +30,8 @@ const EditCategories = () => {
     (state) => state.updateCategories
   );
 
+  console.log('📦 Categories in edit:', categories);
+
   const currentAccount = useMemo(
     () => categories.find((acc) => acc._id === id),
     [categories, id]
