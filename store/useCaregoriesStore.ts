@@ -91,7 +91,7 @@ export const useCategoriesStore = create<CategoriesState>((set, get) => ({
 
   deleteCategories: async (ids) => {
     try {
-      console.log('🗑️ Deleting categories:', ids);
+      console.log('Deleting categories:', ids);
 
       set((state) => ({
         categories: state.categories.filter((c) => !ids.includes(c._id)),
