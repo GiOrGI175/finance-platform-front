@@ -113,7 +113,6 @@ export const useAccountStore = create<AccountState>((set, get) => ({
 
       const data = await res.json();
 
-      // update the account in the local store
       set((state) => ({
         accounts: state.accounts.map((acc) =>
           acc._id === id ? data.account : acc

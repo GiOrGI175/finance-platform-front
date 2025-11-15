@@ -1,6 +1,7 @@
 'use client';
 
 import Header from '@/components/organisms/header/Header';
+import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
 
@@ -46,7 +47,9 @@ const DashboardLayout = ({ children }: Props) => {
   if (isChecking) {
     return (
       <div className='flex items-center justify-center h-screen text-gray-500'>
-        Checking authentication...
+        <div className='h-[500px] w-full flex items-center justify-center'>
+          <Loader2 className='size-[50px] text-slate-300 animate-spin' />
+        </div>
       </div>
     );
   }
