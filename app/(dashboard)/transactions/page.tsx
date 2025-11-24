@@ -45,7 +45,7 @@ const TransactionsPage = () => {
   }, []);
 
   useEffect(() => {
-    console.log('🧾 Categories Data:', transactions);
+    console.log('transactions Data:', transactions);
   }, [transactions]);
 
   if (loading) {
