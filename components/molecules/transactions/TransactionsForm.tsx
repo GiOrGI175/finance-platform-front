@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { accountSchema } from '@/lib/schema/account.shcema';
 import {
   Form,
   FormControl,
@@ -17,7 +16,6 @@ import { Select } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Textarea } from '@/components/ui/textarea';
 import { AmountInput } from '@/components/ui/amount-input';
-import { convertAmountToMiliunits } from '@/lib/utils';
 
 export type FormValues = z.infer<typeof transactionSchema>;
 
@@ -54,11 +52,7 @@ const TransactionsForm = ({
 
   const handleSubmit = (values: FormValues) => {
     console.log('handleSubmit called:', values);
-
-    const amount = parseFloat(values.amount);
-    const amountMiliunites = convertAmountToMiliunits(amount);
-
-    onSubmit({ ...values, amount: amountMiliunites.toString() });
+    onSubmit(values);
   };
 
   const handleDelete = () => {
@@ -68,10 +62,7 @@ const TransactionsForm = ({
   return (
     <Form {...form}>
       <form
-        onSubmit={(e) => {
-          console.log('Form onSubmit event fired!');
-          form.handleSubmit(handleSubmit)(e);
-        }}
+        onSubmit={form.handleSubmit(handleSubmit)}
         className='space-y-4 px-4'
       >
         <FormField
@@ -82,7 +73,12 @@ const TransactionsForm = ({
               <FormControl>
                 <DatePicker
                   value={field.value ? new Date(field.value) : undefined}
-                  onChange={(date) => field.onChange(date?.toISOString())}
+                  onChange={(date) => {
+                    const formattedDate = date
+                      ? date.toISOString().split('T')[0]
+                      : '';
+                    field.onChange(formattedDate);
+                  }}
                   disabled={disabled}
                 />
               </FormControl>
@@ -138,6 +134,7 @@ const TransactionsForm = ({
                   disabled={disabled}
                   placeholder='Add a Payee'
                   {...field}
+                  value={field.value || ''}
                 />
               </FormControl>
             </FormItem>
@@ -151,7 +148,8 @@ const TransactionsForm = ({
               <FormLabel>Amount</FormLabel>
               <FormControl>
                 <AmountInput
-                  {...field}
+                  value={field.value || ''}
+                  onChange={(value) => field.onChange(value || '')}
                   disabled={disabled}
                   placeholder='0.00'
                 />
@@ -177,13 +175,8 @@ const TransactionsForm = ({
             </FormItem>
           )}
         />
-        <Button
-          className='w-full'
-          disabled={disabled}
-          type='submit'
-          onClick={() => console.log('Button clicked!')}
-        >
-          {id ? 'Save changes' : 'Create account'}
+        <Button className='w-full' disabled={disabled} type='submit'>
+          {id ? 'Save changes' : 'Create Transaction'}
         </Button>
         {id && (
           <Button
@@ -191,11 +184,10 @@ const TransactionsForm = ({
             disabled={disabled}
             onClick={handleDelete}
             className='w-full'
-            size='icon'
             variant='outline'
           >
-            {' '}
-            <Trash className='size-4 mr-2' /> <p>Delete account</p>{' '}
+            <Trash className='size-4 mr-2' />
+            <span>Delete Transaction</span>
           </Button>
         )}
       </form>

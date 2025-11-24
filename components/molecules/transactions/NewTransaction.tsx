@@ -1,6 +1,5 @@
 'use client';
 
-import { useNewAccount } from '@/store/newAccStore';
 import {
   Sheet,
   SheetContent,
@@ -9,9 +8,6 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import TransactionsForm, { FormValues } from './TransactionsForm';
-import { toast } from 'sonner';
-import { useState } from 'react';
-import { useAuthStore } from '@/store/authStore';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useNewTransaction } from '@/store/newTransactionStore';
@@ -35,14 +31,10 @@ const NewTransaction = ({
   const createAccount = useAccountStore((state) => state.createAccount);
   const accounts = useAccountStore((state) => state.accounts);
 
-  console.log(accounts);
-
   const accountsOptions = accounts.map((acc) => ({
     label: acc.name,
     value: acc._id,
   }));
-
-  console.log(accountsOptions);
 
   const createCategories = useCategoriesStore(
     (state) => state.createCategories
@@ -54,6 +46,7 @@ const NewTransaction = ({
   }));
 
   const onSubmit = async (values: FormValues) => {
+    console.log('onSubmit values:', values);
     await createTransaction(values);
     setClose();
   };
@@ -73,11 +66,11 @@ const NewTransaction = ({
           createCategories={createCategories}
           categoriesOptions={categoriesOptions}
           defaultValues={{
-            date: '',
+            date: new Date().toISOString().split('T')[0],
             accountId: '',
             categoryId: '',
             payee: '',
-            amount: '',
+            amount: '', // string
             notes: '',
           }}
         />
