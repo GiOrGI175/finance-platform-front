@@ -4,6 +4,7 @@ import Transactions from '@/lib/model/transactions';
 import jwt from 'jsonwebtoken';
 import { transactionSchema } from '@/lib/schema/transactions.shcema';
 import { parseISO, subDays } from 'date-fns';
+import { cookies } from 'next/headers';
 
 interface DecodedToken {
   id: string;
@@ -11,21 +12,25 @@ interface DecodedToken {
 
 export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const from = searchParams.get('from');
-    const to = searchParams.get('to');
-    const accountId = searchParams.get('accountId');
+    const cookiesStore = await cookies();
+    const token = cookiesStore.get('token')?.value;
 
-    const token = req.headers.get('authorization')?.replace('Bearer ', '');
     if (!token)
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
-    if (!decoded?.id)
+
+    if (!decoded?.id) {
       return NextResponse.json(
         { message: 'Invalid token payload' },
         { status: 401 }
       );
+    }
+
+    const { searchParams } = new URL(req.url);
+    const from = searchParams.get('from');
+    const to = searchParams.get('to');
+    const accountId = searchParams.get('accountId');
 
     await connectDB();
 
@@ -56,16 +61,20 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const token = req.headers.get('authorization')?.replace('Bearer ', '');
+    const cookiesStore = await cookies();
+    const token = cookiesStore.get('token')?.value;
+
     if (!token)
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
-    if (!decoded?.id)
+
+    if (!decoded?.id) {
       return NextResponse.json(
         { message: 'Invalid token payload' },
         { status: 401 }
       );
+    }
 
     const body = await req.json();
     const validated = transactionSchema.parse(body);

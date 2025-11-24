@@ -20,7 +20,14 @@ interface TransactionState {
     to?: string;
     accountId?: string;
   }) => Promise<void>;
-  createTransaction: (values: Omit<Transaction, '_id'>) => Promise<void>;
+  createTransaction: (values: {
+    amount: string;
+    date: string;
+    accountId: string;
+    categoryId: string;
+    payee?: string | undefined;
+    notes?: string | undefined;
+  }) => Promise<void>;
   deleteTransactions: (ids: string[]) => Promise<void>;
   updateTransaction: (
     id: string,

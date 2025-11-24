@@ -13,7 +13,6 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-// ✅ PATCH (update transaction)
 export async function PATCH(req: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
@@ -60,7 +59,6 @@ export async function PATCH(req: Request, context: RouteContext) {
   }
 }
 
-// ✅ DELETE (delete transaction)
 export async function DELETE(
   req: Request,
   context: { params: Promise<{ id: string }> }
