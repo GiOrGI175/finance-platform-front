@@ -42,7 +42,7 @@ export const Select = ({
           ':hover': { borderColor: '#e2e8f0' },
         }),
       }}
-      value={value !== '' ? formattedValue : value}
+      value={formattedValue}
       onChange={onSelect}
       options={options}
       onCreateOption={(inputValue) => onCreate?.({ name: inputValue })}
