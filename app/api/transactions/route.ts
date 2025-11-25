@@ -30,7 +30,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const from = searchParams.get('from');
     const to = searchParams.get('to');
-    const accountId = searchParams.get('accountId');
+    // const accountId = searchParams.get('accountId');
 
     await connectDB();
 
@@ -44,10 +44,21 @@ export async function GET(req: Request) {
       date: { $gte: startDate, $lte: endDate },
     };
 
-    if (accountId) query.accountId = accountId;
-    else query.accountId = decoded.id;
+    // if (accountId) query.accountId = accountId;
+    // else query.accountId = decoded.id;
 
-    const transactions = await Transactions.find(query).sort({ date: -1 });
+    const transactions = await Transactions.find(query)
+      .populate({
+        path: 'accountId',
+        select: 'name',
+        model: 'Account',
+      })
+      .populate({
+        path: 'categoryId',
+        select: 'name',
+        model: 'Categories',
+      })
+      .sort({ date: -1 });
 
     return NextResponse.json({ transactions });
   } catch (err) {
@@ -80,7 +91,6 @@ export async function POST(req: Request) {
 
     const newTx = await Transactions.create({
       ...validated,
-      accountId: decoded.id,
     });
 
     return NextResponse.json({ transaction: newTx }, { status: 201 });

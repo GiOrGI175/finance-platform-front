@@ -7,7 +7,7 @@ const TransactionsSchema = new Schema(
       required: [true, 'Amount is required'],
       validate: {
         validator: function (v: string) {
-          return /^\d+(\.\d{1,2})?$/.test(v);
+          return /^-?\d+(\.\d{1,2})?$/.test(v);
         },
         message: 'Amount must be a valid number',
       },
