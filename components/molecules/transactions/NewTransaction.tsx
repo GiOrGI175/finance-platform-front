@@ -70,7 +70,7 @@ const NewTransaction = ({
             accountId: '',
             categoryId: '',
             payee: '',
-            amount: '', // string
+            amount: '',
             notes: '',
           }}
         />

@@ -11,6 +11,7 @@ import { Edit, MoreHorizontal } from 'lucide-react';
 import { useNewAccount } from '@/store/newAccStore';
 import { useNewCategories } from '@/store/newCtgStore';
 import { usePathname } from 'next/navigation';
+import { useNewTransaction } from '@/store/newTransactionStore';
 
 type Props = {
   id: string;
@@ -21,12 +22,15 @@ const Actions = ({ id }: Props) => {
 
   const setOpenAccountEdit = useNewAccount((state) => state.setOpenEdit);
   const setOpenCategoryEdit = useNewCategories((state) => state.setOpenEdit);
+  const setTransactionsEdit = useNewTransaction((state) => state.setOpenEdit);
 
   const handleEdit = () => {
     if (pathname.includes('/accounts')) {
       setOpenAccountEdit(id);
     } else if (pathname.includes('/categories')) {
       setOpenCategoryEdit(id);
+    } else if (pathname.includes('/transactions')) {
+      setTransactionsEdit(id);
     } else {
       console.warn('⚠️ Unknown pathname in Actions:', pathname);
     }
