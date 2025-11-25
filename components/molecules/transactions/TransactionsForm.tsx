@@ -16,6 +16,7 @@ import { Select } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Textarea } from '@/components/ui/textarea';
 import { AmountInput } from '@/components/ui/amount-input';
+import { useEffect } from 'react';
 
 export type FormValues = z.infer<typeof transactionSchema>;
 
@@ -50,6 +51,14 @@ const TransactionsForm = ({
     defaultValues: defaultValues,
   });
 
+  // ✅ Reset form when defaultValues change
+  useEffect(() => {
+    if (defaultValues) {
+      console.log('Resetting form with defaultValues:', defaultValues);
+      form.reset(defaultValues);
+    }
+  }, [defaultValues, form]);
+
   const handleSubmit = (values: FormValues) => {
     console.log('handleSubmit called:', values);
     onSubmit(values);
@@ -59,7 +68,7 @@ const TransactionsForm = ({
     onDelete?.();
   };
 
-  console.log(defaultValues);
+  console.log('Current form values:', form.watch());
 
   return (
     <Form {...form}>
@@ -91,7 +100,7 @@ const TransactionsForm = ({
           name='accountId'
           control={form.control}
           render={({ field }) => {
-            console.log(field, 'field');
+            console.log('accountId field:', field.value);
             return (
               <FormItem>
                 <FormLabel>Account</FormLabel>
@@ -112,21 +121,24 @@ const TransactionsForm = ({
         <FormField
           name='categoryId'
           control={form.control}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Category</FormLabel>
-              <FormControl>
-                <Select
-                  placeholder='Select an category'
-                  options={categoriesOptions}
-                  onCreate={createCategories}
-                  value={field.value}
-                  onChange={field.onChange}
-                  disabled={disabled}
-                />
-              </FormControl>
-            </FormItem>
-          )}
+          render={({ field }) => {
+            console.log('categoryId field:', field.value);
+            return (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <FormControl>
+                  <Select
+                    placeholder='Select an category'
+                    options={categoriesOptions}
+                    onCreate={createCategories}
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={disabled}
+                  />
+                </FormControl>
+              </FormItem>
+            );
+          }}
         />
         <FormField
           name='payee'

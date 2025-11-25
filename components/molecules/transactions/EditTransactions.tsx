@@ -39,27 +39,68 @@ const EditTransactions = () => {
     [transactions, id]
   );
 
-  console.log(currentTransaction, 'currentTransaction');
+  console.log('currentTransaction:', currentTransaction);
 
   const createAccount = useAccountStore((state) => state.createAccount);
   const accounts = useAccountStore((state) => state.accounts);
-  const accountsOptions = accounts.map((acc) => ({
-    label: acc.name,
-    value: acc._id,
-  }));
+  const accountsOptions = useMemo(
+    () =>
+      accounts.map((acc) => ({
+        label: acc.name,
+        value: acc._id,
+      })),
+    [accounts]
+  );
 
   const createCategories = useCategoriesStore(
     (state) => state.createCategories
   );
   const categories = useCategoriesStore((state) => state.categories);
-  const categoriesOptions = categories.map((ctg) => ({
-    label: ctg.name,
-    value: ctg._id,
-  }));
+  const categoriesOptions = useMemo(
+    () =>
+      categories.map((ctg) => ({
+        label: ctg.name,
+        value: ctg._id,
+      })),
+    [categories]
+  );
+
+  // ✅ defaultValues with proper _id values
+  const defaultValues = useMemo(() => {
+    if (!currentTransaction) {
+      return {
+        date: new Date().toISOString().split('T')[0],
+        accountId: '',
+        categoryId: '',
+        payee: '',
+        amount: '',
+        notes: '',
+      };
+    }
+
+    const values = {
+      date: currentTransaction.date || new Date().toISOString().split('T')[0],
+      accountId: currentTransaction.accountId?._id || '',
+      categoryId: currentTransaction.categoryId?._id || '',
+      payee: currentTransaction.payee || '',
+      amount: currentTransaction.amount?.toString() || '',
+      notes: currentTransaction.notes || '',
+    };
+
+    console.log('Default Values:', values);
+    return values;
+  }, [currentTransaction]);
+
+  // Reset form when transaction changes
+  useEffect(() => {
+    if (currentTransaction && isOpenEdit) {
+      console.log('Resetting form with transaction:', currentTransaction);
+    }
+  }, [currentTransaction, isOpenEdit]);
 
   const onSubmit = async (values: FormValues) => {
     try {
-      if (!id) return toast.error('Missing account ID');
+      if (!id) return toast.error('Missing transaction ID');
 
       await updateTransaction(id, {
         ...values,
@@ -67,11 +108,11 @@ const EditTransactions = () => {
         accountId: { _id: values.accountId, name: '' },
         categoryId: { _id: values.categoryId, name: '' },
       });
-      toast.success('Account updated successfully!');
+      toast.success('Transaction updated successfully!');
       setCloseEdit();
     } catch (error) {
       console.error('Edit error:', error);
-      toast.error('Failed to update account');
+      toast.error('Failed to update transaction');
     }
   };
 
@@ -80,8 +121,6 @@ const EditTransactions = () => {
     await deleteTransactions([id]);
     setCloseEdit();
   };
-
-  useEffect(() => {}, []);
 
   return (
     <Sheet open={isOpenEdit} onOpenChange={setCloseEdit}>
@@ -102,14 +141,7 @@ const EditTransactions = () => {
           accountsOptions={accountsOptions}
           createCategories={createCategories}
           categoriesOptions={categoriesOptions}
-          defaultValues={{
-            date: new Date().toISOString().split('T')[0],
-            accountId: currentTransaction?.accountId.name || '',
-            categoryId: currentTransaction?.categoryId.name || '',
-            payee: currentTransaction?.payee || '',
-            amount: currentTransaction?.amount?.toString() || '',
-            notes: currentTransaction?.notes || '',
-          }}
+          defaultValues={defaultValues}
         />
       </SheetContent>
     </Sheet>
