@@ -47,12 +47,9 @@ export async function GET(req: Request) {
     if (accountId) query.accountId = accountId;
     else query.accountId = decoded.id;
 
-    const data = await Transactions.find(query)
-      .populate('accountId', 'name')
-      .populate('categoryId', 'name')
-      .sort({ date: -1 });
+    const transactions = await Transactions.find(query).sort({ date: -1 });
 
-    return NextResponse.json({ data });
+    return NextResponse.json({ transactions });
   } catch (err) {
     console.error('GET error:', err);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });
