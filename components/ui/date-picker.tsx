@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 
@@ -18,8 +18,20 @@ type Props = {
 };
 
 export const DatePicker = ({ value, onChange, disabled }: Props) => {
+  const [open, setOpen] = useState(false);
+
+  const handleSelect = (date?: Date) => {
+    if (!date) return onChange?.(undefined);
+
+    const localDate = new Date(
+      date.getTime() - date.getTimezoneOffset() * 60000
+    );
+    onChange?.(localDate);
+    setOpen(false);
+  };
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           disabled={disabled}
@@ -30,14 +42,14 @@ export const DatePicker = ({ value, onChange, disabled }: Props) => {
           )}
         >
           <CalendarIcon className='size-4 mr-2' />
-          {value ? format(value, 'PPP') : <span>Pick a dare</span>}
+          {value ? format(value, 'PPP') : <span>Pick a date</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent>
         <Calendar
           mode='single'
           selected={value}
-          onSelect={onChange}
+          onSelect={handleSelect}
           disabled={disabled}
           autoFocus
         />
