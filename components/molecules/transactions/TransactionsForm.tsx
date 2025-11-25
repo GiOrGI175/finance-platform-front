@@ -59,6 +59,8 @@ const TransactionsForm = ({
     onDelete?.();
   };
 
+  console.log(defaultValues);
+
   return (
     <Form {...form}>
       <form
@@ -88,21 +90,24 @@ const TransactionsForm = ({
         <FormField
           name='accountId'
           control={form.control}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Account</FormLabel>
-              <FormControl>
-                <Select
-                  placeholder='Select an account'
-                  options={accountsOptions}
-                  onCreate={createAccount}
-                  value={field.value}
-                  onChange={field.onChange}
-                  disabled={disabled}
-                />
-              </FormControl>
-            </FormItem>
-          )}
+          render={({ field }) => {
+            console.log(field, 'field');
+            return (
+              <FormItem>
+                <FormLabel>Account</FormLabel>
+                <FormControl>
+                  <Select
+                    placeholder='Select an account'
+                    options={accountsOptions}
+                    onCreate={createAccount}
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={disabled}
+                  />
+                </FormControl>
+              </FormItem>
+            );
+          }}
         />
         <FormField
           name='categoryId'

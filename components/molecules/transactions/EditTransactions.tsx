@@ -33,69 +33,33 @@ const EditTransactions = () => {
   );
 
   console.log('Transactions in edit:', transactions);
-  console.log('Current ID:', id);
 
   const currentTransaction = useMemo(
-    () => transactions.find((acc) => acc._id === id),
+    () => transactions.find((transactions) => transactions._id === id),
     [transactions, id]
   );
 
-  console.log('Current Transaction:', currentTransaction);
+  console.log(currentTransaction, 'currentTransaction');
 
   const createAccount = useAccountStore((state) => state.createAccount);
   const accounts = useAccountStore((state) => state.accounts);
-
-  const accountsOptions = useMemo(
-    () =>
-      accounts.map((acc) => ({
-        label: acc.name,
-        value: acc._id,
-      })),
-    [accounts]
-  );
+  const accountsOptions = accounts.map((acc) => ({
+    label: acc.name,
+    value: acc._id,
+  }));
 
   const createCategories = useCategoriesStore(
     (state) => state.createCategories
   );
   const categories = useCategoriesStore((state) => state.categories);
-
-  const categoriesOptions = useMemo(
-    () =>
-      categories.map((ctg) => ({
-        label: ctg.name,
-        value: ctg._id,
-      })),
-    [categories]
-  );
-
-  // Default values with proper fallbacks
-  const defaultValues = useMemo(() => {
-    if (!currentTransaction) {
-      return {
-        date: new Date().toISOString().split('T')[0],
-        accountId: '',
-        categoryId: '',
-        payee: '',
-        amount: '',
-        notes: '',
-      };
-    }
-
-    return {
-      date: currentTransaction.date || new Date().toISOString().split('T')[0],
-      accountId: currentTransaction.accountId?._id || '',
-      categoryId: currentTransaction.categoryId?._id || '',
-      payee: currentTransaction.payee || '',
-      amount: currentTransaction.amount?.toString() || '',
-      notes: currentTransaction.notes || '',
-    };
-  }, [currentTransaction]);
-
-  console.log('Default Values:', defaultValues);
+  const categoriesOptions = categories.map((ctg) => ({
+    label: ctg.name,
+    value: ctg._id,
+  }));
 
   const onSubmit = async (values: FormValues) => {
     try {
-      if (!id) return toast.error('Missing transaction ID');
+      if (!id) return toast.error('Missing account ID');
 
       await updateTransaction(id, {
         ...values,
@@ -103,11 +67,11 @@ const EditTransactions = () => {
         accountId: { _id: values.accountId, name: '' },
         categoryId: { _id: values.categoryId, name: '' },
       });
-      toast.success('Transaction updated successfully!');
+      toast.success('Account updated successfully!');
       setCloseEdit();
     } catch (error) {
       console.error('Edit error:', error);
-      toast.error('Failed to update transaction');
+      toast.error('Failed to update account');
     }
   };
 
@@ -117,19 +81,7 @@ const EditTransactions = () => {
     setCloseEdit();
   };
 
-  // Don't render form until we have the transaction data
-  if (!currentTransaction) {
-    return (
-      <Sheet open={isOpenEdit} onOpenChange={setCloseEdit}>
-        <SheetContent className='space-y-4'>
-          <SheetHeader>
-            <SheetTitle>Edit Transaction</SheetTitle>
-            <SheetDescription>Loading transaction data...</SheetDescription>
-          </SheetHeader>
-        </SheetContent>
-      </Sheet>
-    );
-  }
+  useEffect(() => {}, []);
 
   return (
     <Sheet open={isOpenEdit} onOpenChange={setCloseEdit}>
@@ -150,7 +102,14 @@ const EditTransactions = () => {
           accountsOptions={accountsOptions}
           createCategories={createCategories}
           categoriesOptions={categoriesOptions}
-          defaultValues={defaultValues}
+          defaultValues={{
+            date: new Date().toISOString().split('T')[0],
+            accountId: currentTransaction?.accountId.name || '',
+            categoryId: currentTransaction?.categoryId.name || '',
+            payee: currentTransaction?.payee || '',
+            amount: currentTransaction?.amount?.toString() || '',
+            notes: currentTransaction?.notes || '',
+          }}
         />
       </SheetContent>
     </Sheet>

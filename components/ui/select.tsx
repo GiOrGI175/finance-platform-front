@@ -29,6 +29,8 @@ export const Select = ({
     return options.find((option) => option.value === value);
   }, [options, value]);
 
+  console.log(value);
+
   return (
     <CreateableSelect
       placeholder={placeholder}
@@ -40,7 +42,7 @@ export const Select = ({
           ':hover': { borderColor: '#e2e8f0' },
         }),
       }}
-      value={formattedValue}
+      value={value !== '' ? formattedValue : value}
       onChange={onSelect}
       options={options}
       onCreateOption={(inputValue) => onCreate?.({ name: inputValue })}

@@ -12,6 +12,8 @@ import { useNewAccount } from '@/store/newAccStore';
 import { useNewCategories } from '@/store/newCtgStore';
 import { usePathname } from 'next/navigation';
 import { useNewTransaction } from '@/store/newTransactionStore';
+import { useCategoriesStore } from '@/store/useCaregoriesStore';
+import { useAccountStore } from '@/store/useAccountStore';
 
 type Props = {
   id: string;
@@ -24,6 +26,10 @@ const Actions = ({ id }: Props) => {
   const setOpenCategoryEdit = useNewCategories((state) => state.setOpenEdit);
   const setTransactionsEdit = useNewTransaction((state) => state.setOpenEdit);
 
+  const fetchCategories = useCategoriesStore((state) => state.fetchCategories);
+
+  const fetchAccounts = useAccountStore((state) => state.fetchAccounts);
+
   const handleEdit = () => {
     if (pathname.includes('/accounts')) {
       setOpenAccountEdit(id);
@@ -31,6 +37,8 @@ const Actions = ({ id }: Props) => {
       setOpenCategoryEdit(id);
     } else if (pathname.includes('/transactions')) {
       setTransactionsEdit(id);
+      fetchAccounts();
+      fetchCategories();
     } else {
       console.warn('⚠️ Unknown pathname in Actions:', pathname);
     }
