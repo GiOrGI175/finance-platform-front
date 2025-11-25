@@ -7,8 +7,8 @@ interface Transaction {
   payee: string;
   notes?: string;
   date: string;
-  accountId: string;
-  categoryId: string;
+  accountId: { _id: string; name: string };
+  categoryId: { _id: string; name: string };
 }
 
 interface TransactionState {
@@ -79,18 +79,16 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       });
+
       if (!res.ok) throw new Error('Failed to create transaction');
 
-      const data = await res.json();
-      console.log('Transaction created:', data);
+      const fetchRes = await fetch('/api/transactions', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      const data = await fetchRes.json();
 
-      set((state) => ({
-        transactions: [
-          ...state.transactions.filter(Boolean),
-          data.transaction || data.transactions,
-        ].filter(Boolean),
-      }));
-
+      set({ transactions: data.transactions });
       toast.success('Transaction created successfully!');
     } catch (err) {
       console.error('createTransaction error:', err);
