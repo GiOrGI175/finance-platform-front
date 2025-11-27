@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Plus } from 'lucide-react';
 
-import { columns } from '@/components/molecules/categories/columns';
+import { columns } from '@/components/molecules/transactions/columns';
 import { DataTable } from '@/components/organisms/reusable_table/DataTabel';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
@@ -12,8 +12,10 @@ import { useNewAccount } from '@/store/newAccStore';
 import { useAuthStore } from '@/store/authStore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAccountStore } from '@/store/useAccountStore';
-import { useCategoriesStore } from '@/store/useCaregoriesStore';
 import { useNewCategories } from '@/store/newCtgStore';
+import { useTransactionStore } from '@/store/useTransactionStore';
+import { useNewTransaction } from '@/store/newTransactionStore';
+import { useCategoriesStore } from '@/store/useCaregoriesStore';
 
 export type AccountRow = {
   _id: string;
@@ -22,27 +24,31 @@ export type AccountRow = {
   userId: string;
 };
 
-const CategoriesPage = () => {
-  const fetchCategories = useCategoriesStore((state) => state.fetchCategories);
-  const categories = useCategoriesStore((state) => state.categories);
-  const loading = useCategoriesStore((state) => state.loading);
-  const deleteCategories = useCategoriesStore(
-    (state) => state.deleteCategories
+const TransactionsPage = () => {
+  const fetchTransactions = useTransactionStore(
+    (state) => state.fetchTransactions
+  );
+  const transactions = useTransactionStore((state) => state.transactions);
+  const loading = useTransactionStore((state) => state.loading);
+  const deleteTransactions = useTransactionStore(
+    (state) => state.deleteTransactions
   );
 
-  const setOpen = useNewCategories((state) => state.setOpen);
+  const fetchCategories = useCategoriesStore((state) => state.fetchCategories);
+
+  const fetchAccounts = useAccountStore((state) => state.fetchAccounts);
+
+  const setOpen = useNewTransaction((state) => state.setOpen);
 
   useEffect(() => {
+    fetchTransactions();
     fetchCategories();
+    fetchAccounts();
   }, []);
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    console.log('🧾 Categories Data:', categories);
-  }, [categories]);
+    console.log('transactions Data:', transactions);
+  }, [transactions]);
 
   if (loading) {
     return (
@@ -69,7 +75,11 @@ const CategoriesPage = () => {
             Caregories page
           </CardTitle>
           <Button
-            onClick={() => setOpen()}
+            onClick={() => {
+              setOpen();
+              fetchAccounts();
+              fetchCategories();
+            }}
             size='sm'
             className='w-full sm:w-auto'
           >
@@ -79,12 +89,12 @@ const CategoriesPage = () => {
         </CardHeader>
         <CardContent>
           <DataTable
-            filterKey='name'
+            filterKey='date'
             columns={columns}
-            data={categories}
+            data={transactions}
             onDelete={(row) => {
               const ids = row.map((r) => r.original._id);
-              deleteCategories(ids);
+              deleteTransactions(ids);
             }}
             disabled={loading}
           />
@@ -94,4 +104,4 @@ const CategoriesPage = () => {
   );
 };
 
-export default CategoriesPage;
+export default TransactionsPage;

@@ -4,12 +4,21 @@ const TransactionsSchema = new Schema(
   {
     amount: {
       type: String,
+      required: [true, 'Amount is required'],
+      validate: {
+        validator: function (v: string) {
+          return /^-?\d+(\.\d{1,2})?$/.test(v);
+        },
+        message: 'Amount must be a valid number',
+      },
     },
     payee: {
       type: String,
+      default: '',
     },
     notes: {
       type: String,
+      default: '',
     },
     date: {
       type: Date,

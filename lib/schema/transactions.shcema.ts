@@ -4,7 +4,7 @@ export const transactionSchema = z.object({
   amount: z
     .string()
     .min(1, 'Amount is required')
-    .regex(/^\d+(\.\d{1,2})?$/, 'Amount must be a valid number'),
+    .regex(/^-?\d+(\.\d{1,2})?$/, 'Amount must be a valid number'),
   payee: z.string().optional(),
   notes: z.string().optional(),
   date: z

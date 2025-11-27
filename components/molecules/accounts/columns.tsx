@@ -13,13 +13,6 @@ export type AccountRow = {
   userId: string;
 };
 
-// export type Payment = {
-//   _id: string;
-//   amount: number;
-//   status: string;
-//   email: string;
-// };
-
 export const columns: ColumnDef<AccountRow>[] = [
   {
     id: 'select',
