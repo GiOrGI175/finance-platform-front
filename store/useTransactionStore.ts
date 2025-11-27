@@ -3,7 +3,7 @@ import { create } from 'zustand';
 
 interface Transaction {
   _id: string;
-  amount: number;
+  amount: string;
   payee: string;
   notes?: string;
   date: string;
@@ -31,7 +31,14 @@ interface TransactionState {
   deleteTransactions: (ids: string[]) => Promise<void>;
   updateTransaction: (
     id: string,
-    values: Partial<Transaction>
+    values: {
+      amount?: string;
+      date?: string;
+      accountId?: string;
+      categoryId?: string;
+      payee?: string;
+      notes?: string;
+    }
   ) => Promise<void>;
 }
 
@@ -80,7 +87,10 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
         body: JSON.stringify(values),
       });
 
-      if (!res.ok) throw new Error('Failed to create transaction');
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to create transaction');
+      }
 
       const fetchRes = await fetch('/api/transactions', {
         method: 'GET',
@@ -93,6 +103,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     } catch (err) {
       console.error('createTransaction error:', err);
       toast.error('Failed to create transaction');
+      throw err;
     } finally {
       set({ createLoading: false });
     }
@@ -101,6 +112,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   deleteTransactions: async (ids) => {
     try {
       console.log('Deleting transactions:', ids);
+      set({ createLoading: true });
 
       set((state) => ({
         transactions: state.transactions.filter((t) => !ids.includes(t._id)),
@@ -111,7 +123,12 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
           method: 'DELETE',
           credentials: 'include',
         });
-        if (!res.ok) throw new Error(`Failed to delete transaction: ${id}`);
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(
+            error.message || `Failed to delete transaction: ${id}`
+          );
+        }
       }
 
       toast.success(
@@ -120,25 +137,38 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     } catch (err) {
       console.error('deleteTransactions error:', err);
       toast.error('Failed to delete transactions');
+      get().fetchTransactions();
+      throw err;
+    } finally {
+      set({ createLoading: false });
     }
   },
 
   updateTransaction: async (id, values) => {
     try {
+      set({ createLoading: true });
+
+      console.log('Updating transaction:', id, values);
+
       const res = await fetch(`/api/transactions/${id}`, {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       });
-      if (!res.ok) throw new Error('Failed to update transaction');
+
+      if (!res.ok) {
+        const error = await res.json();
+        console.error('Update failed:', error);
+        throw new Error(error.message || 'Failed to update transaction');
+      }
 
       const data = await res.json();
-      console.log('Updated transaction:', data);
+      console.log('Update response:', data);
 
       set((state) => ({
         transactions: state.transactions.map((t) =>
-          t._id === id ? data.transaction || data.updatedTransaction || t : t
+          t._id === id ? data.transaction || t : t
         ),
       }));
 
@@ -146,6 +176,9 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     } catch (err) {
       console.error('updateTransaction error:', err);
       toast.error('Failed to update transaction');
+      throw err;
+    } finally {
+      set({ createLoading: false });
     }
   },
 }));

@@ -24,23 +24,22 @@ export async function PATCH(req: Request, context: RouteContext) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
-
     if (!decoded?.id)
-      return NextResponse.json(
-        { message: 'Invalid token payload' },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: 'Invalid token' }, { status: 401 });
 
     const body = await req.json();
     const validated = transactionSchema.partial().parse(body);
 
     await connectDB();
 
+    // update + populate
     const updated = await Transactions.findOneAndUpdate(
-      { _id: id, accountId: decoded.id },
+      { _id: id }, // ვანეყენებთ მხოლოდ _id-ს
       validated,
       { new: true }
-    );
+    )
+      .populate('accountId')
+      .populate('categoryId');
 
     if (!updated) {
       return NextResponse.json(
@@ -78,7 +77,6 @@ export async function DELETE(
 
     const deleted = await Transactions.findOneAndDelete({
       _id: id,
-      accountId: decoded.id,
     });
 
     if (!deleted) {

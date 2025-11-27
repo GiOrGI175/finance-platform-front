@@ -65,7 +65,6 @@ const EditTransactions = () => {
     [categories]
   );
 
-  // ✅ defaultValues with proper _id values
   const defaultValues = useMemo(() => {
     if (!currentTransaction) {
       return {
@@ -79,7 +78,9 @@ const EditTransactions = () => {
     }
 
     const values = {
-      date: currentTransaction.date || new Date().toISOString().split('T')[0],
+      date: currentTransaction.date
+        ? new Date(currentTransaction.date).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0],
       accountId: currentTransaction.accountId?._id || '',
       categoryId: currentTransaction.categoryId?._id || '',
       payee: currentTransaction.payee || '',
@@ -91,7 +92,6 @@ const EditTransactions = () => {
     return values;
   }, [currentTransaction]);
 
-  // Reset form when transaction changes
   useEffect(() => {
     if (currentTransaction && isOpenEdit) {
       console.log('Resetting form with transaction:', currentTransaction);
@@ -102,12 +102,21 @@ const EditTransactions = () => {
     try {
       if (!id) return toast.error('Missing transaction ID');
 
-      await updateTransaction(id, {
-        ...values,
-        amount: parseFloat(values.amount),
-        accountId: { _id: values.accountId, name: '' },
-        categoryId: { _id: values.categoryId, name: '' },
-      });
+      console.log('Submitting values:', values);
+
+      const payload = {
+        date: values.date,
+        accountId: values.accountId,
+        categoryId: values.categoryId,
+        payee: values.payee,
+        amount: values.amount,
+        notes: values.notes,
+      };
+
+      console.log('Sending payload:', payload);
+
+      await updateTransaction(id, payload);
+
       toast.success('Transaction updated successfully!');
       setCloseEdit();
     } catch (error) {
