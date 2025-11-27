@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 export type TransactionRow = {
   _id: string;
   payee: string;
-  amount: number;
+  amount: string;
   date: string;
   notes?: string;
   accountId: {
