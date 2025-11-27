@@ -42,6 +42,8 @@ const TransactionsPage = () => {
 
   useEffect(() => {
     fetchTransactions();
+    fetchCategories();
+    fetchAccounts();
   }, []);
 
   useEffect(() => {
