@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { transactionSchema } from '@/lib/schema/transactions.shcema';
 import { parseISO, subDays } from 'date-fns';
 import { cookies } from 'next/headers';
+import mongoose from 'mongoose';
 
 interface DecodedToken {
   id: string;
@@ -40,7 +41,10 @@ export async function GET(req: Request) {
     const startDate = from ? parseISO(from) : defaultFrom;
     const endDate = to ? parseISO(to) : defaultTo;
 
+    console.log(decoded.id);
+
     const query: any = {
+      userId: decoded.id,
       date: { $gte: startDate, $lte: endDate },
     };
 
@@ -91,6 +95,7 @@ export async function POST(req: Request) {
 
     const newTx = await Transactions.create({
       ...validated,
+      userId: new mongoose.Types.ObjectId(decoded.id),
     });
 
     return NextResponse.json({ transaction: newTx }, { status: 201 });

@@ -33,6 +33,11 @@ const TransactionsSchema = new Schema(
       ref: 'Categories',
       required: true,
     },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
   },
   { timestamps: true, collection: 'Transactions' }
 );

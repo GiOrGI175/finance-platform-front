@@ -54,7 +54,15 @@ export async function POST(req: Request) {
       path: '/',
     });
 
-    return res;
+    return NextResponse.json(
+      { message: 'Login successful' },
+      {
+        status: 200,
+        headers: {
+          'Set-Cookie': `token=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=604800`,
+        },
+      }
+    );
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });
