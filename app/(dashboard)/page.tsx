@@ -1,14 +1,11 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { useNewAccount } from '@/store/newAccStore';
+import DataGrid from '@/components/organisms/home/DataGrid';
 
 export default function Home() {
-  const setOpen = useNewAccount((state) => state.setOpen);
-
   return (
-    <div>
-      <Button onClick={setOpen}>Add new account</Button>
+    <div className='max-w-screen-2xl mx-auto w-full pb-10 -mt-24'>
+      <DataGrid />
     </div>
   );
 }
