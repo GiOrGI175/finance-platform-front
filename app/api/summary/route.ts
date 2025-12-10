@@ -236,15 +236,28 @@ export async function GET(req: Request) {
     const days = fillMissingDays(activeDays, startDate, endDate);
 
     return NextResponse.json({
-      currentPeriod,
-      lastPeriod,
-      incomeChange,
-      expensesChange,
-      remainingChange,
-      finalCategories,
-      activeDays,
-      days,
+      data: {
+        remainingAmount: currentPeriod.remaining,
+        remainingChange,
+        incomeAmount: currentPeriod.income,
+        incomeChange,
+        expensesAmount: currentPeriod.expenses,
+        expensesChange,
+        categories: finalCategories,
+        days,
+      },
     });
+
+    // return NextResponse.json({
+    //   currentPeriod,
+    //   lastPeriod,
+    //   incomeChange,
+    //   expensesChange,
+    //   remainingChange,
+    //   finalCategories,
+    //   activeDays,
+    //   days,
+    // });
   } catch (error) {
     console.error('Summary API error:', error);
     return NextResponse.json(
