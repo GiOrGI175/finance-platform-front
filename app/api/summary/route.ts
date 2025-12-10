@@ -6,6 +6,7 @@ import { subDays, parseISO, differenceInDays } from 'date-fns';
 import Transactions from '@/lib/model/transactions';
 import Account from '@/lib/model/Account';
 import mongoose from 'mongoose';
+import { calculatePerecentageChange } from '@/lib/utils';
 
 interface DecodedToken {
   id: string;
@@ -138,7 +139,28 @@ export async function GET(req: Request) {
       accountId || undefined
     );
 
-    return NextResponse.json({ currentPeriod, lastPeriod });
+    const incomeChange = calculatePerecentageChange(
+      currentPeriod.income,
+      lastPeriod.income
+    );
+
+    const expensesChange = calculatePerecentageChange(
+      currentPeriod.expenses,
+      lastPeriod.expenses
+    );
+
+    const remainingChange = calculatePerecentageChange(
+      currentPeriod.remaining,
+      lastPeriod.remaining
+    );
+
+    return NextResponse.json({
+      currentPeriod,
+      lastPeriod,
+      incomeChange,
+      expensesChange,
+      remainingChange,
+    });
   } catch (error) {
     console.error('Summary API error:', error);
     return NextResponse.json(
