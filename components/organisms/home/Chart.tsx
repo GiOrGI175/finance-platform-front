@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AreaChart, BarChart, FileSearch, LineChart } from 'lucide-react';
-import AreaVariant from './AreaVariant';
-import BarVariants from './BarVariants';
-import LineVariants from './LineVariants';
+import AreaVariant from '../../molecules/home/AreaVariant';
+import BarVariants from '../../molecules/home/BarVariants';
+import LineVariants from '../../molecules/home/LineVariants';
 import { useState } from 'react';
 import {
   Select,
