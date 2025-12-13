@@ -2,6 +2,8 @@ import HeaderLogo from '@/components/atoms/header/HeaderLogo';
 import UserButton from '@/components/atoms/header/UserButton';
 import Navigation from '@/components/molecules/header/Navigation';
 import WelcomeMsg from '@/components/molecules/header/WelcomeMsg';
+import Filters from './Filters';
+import DataFilter from './DataFilter';
 
 const Header = () => {
   return (
@@ -15,6 +17,7 @@ const Header = () => {
           <UserButton />
         </div>
         <WelcomeMsg />
+        <Filters />
       </div>
     </header>
   );

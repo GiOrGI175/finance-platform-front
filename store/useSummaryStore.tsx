@@ -44,24 +44,24 @@ export const useSummaryStore = create<TransactionState>((set, get) => ({
       const query = new URLSearchParams();
       if (params.from) query.append('from', params.from);
       if (params.to) query.append('to', params.to);
-      if (params.accountId) query.append('accountId', params.accountId);
+      if (params.accountId && params.accountId !== 'all')
+        query.append('accountId', params.accountId);
 
-      const res = await fetch(`/api/summary?${query.toString()}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const res = await fetch(
+        `/api/summary${query.toString() ? `?${query.toString()}` : ''}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
 
       if (!res.ok) throw new Error('Failed to fetch data');
 
       const data = await res.json();
-      set({
-        summary: data.data,
-      });
-
-      console.log(data.data, 'data');
+      set({ summary: data.data });
     } catch (err) {
-      console.error('fetchTransactions error:', err);
+      console.error('fetchSummary error:', err);
       toast.error('Failed to fetch data');
     } finally {
       set({ loading: false });
