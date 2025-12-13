@@ -12,7 +12,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Trash } from 'lucide-react';
 import { transactionSchema } from '@/lib/schema/transactions.shcema';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Textarea } from '@/components/ui/textarea';
 import { AmountInput } from '@/components/ui/amount-input';
@@ -106,13 +112,21 @@ const TransactionsForm = ({
                 <FormLabel>Account</FormLabel>
                 <FormControl>
                   <Select
-                    placeholder='Select an account'
-                    options={accountsOptions}
-                    onCreate={createAccount}
                     value={field.value}
-                    onChange={field.onChange}
+                    onValueChange={field.onChange}
                     disabled={disabled}
-                  />
+                  >
+                    <SelectTrigger className='w-full h-10 px-3 text-sm'>
+                      <SelectValue placeholder='Select an account' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accountsOptions.map((acc) => (
+                        <SelectItem key={acc.value} value={acc.value}>
+                          {acc.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
               </FormItem>
             );
@@ -121,25 +135,31 @@ const TransactionsForm = ({
         <FormField
           name='categoryId'
           control={form.control}
-          render={({ field }) => {
-            console.log('categoryId field:', field.value);
-            return (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <FormControl>
-                  <Select
-                    placeholder='Select an category'
-                    options={categoriesOptions}
-                    onCreate={createCategories}
-                    value={field.value}
-                    onChange={field.onChange}
-                    disabled={disabled}
-                  />
-                </FormControl>
-              </FormItem>
-            );
-          }}
+          render={({ field }) => (
+            <FormItem className='w-full'>
+              <FormLabel>Category</FormLabel>
+              <FormControl className='w-full'>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={disabled}
+                >
+                  <SelectTrigger className='w-full h-10 px-3 text-sm'>
+                    <SelectValue placeholder='Select a category' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categoriesOptions.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormControl>
+            </FormItem>
+          )}
         />
+
         <FormField
           name='payee'
           control={form.control}
