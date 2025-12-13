@@ -11,7 +11,7 @@ import qs from 'query-string';
 import { format, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { ChevronDown } from 'lucide-react';
-import { cn, formatDateRange } from '@/lib/utils';
+import { formatDateRange } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 
@@ -94,12 +94,12 @@ export default function DataFilter() {
           onSelect={setDate}
           numberOfMonths={2}
         />
-        <div className='p-4 w-full flex items-center gap-x-2'>
+        <div className='p-4 flex gap-2'>
           <PopoverClose asChild>
             <Button
               onClick={onReset}
               disabled={!date?.from || !date?.to}
-              className='w-full'
+              className='w-full flex-1'
               variant='outline'
             >
               Reset
@@ -109,7 +109,7 @@ export default function DataFilter() {
             <Button
               onClick={() => pushToUrl(date)}
               disabled={!date?.from || !date?.to}
-              className='w-full'
+              className='w-full flex-1'
             >
               Applay
             </Button>
