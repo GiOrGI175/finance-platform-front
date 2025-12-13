@@ -17,10 +17,6 @@ export async function GET(req: Request) {
     const cookiesStore = await cookies();
     const token = cookiesStore.get('token')?.value;
 
-    console.log('🍪 All cookies:', cookiesStore.getAll());
-    console.log('🔑 Token:', token);
-    console.log('📍 Request URL:', req.url);
-
     if (!token)
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
