@@ -28,6 +28,16 @@ interface TransactionState {
     payee?: string | undefined;
     notes?: string | undefined;
   }) => Promise<void>;
+  bulkCreateTransactions: (
+    rows: {
+      amount: number;
+      date: string;
+      accountId: string;
+      categoryId: string;
+      payee?: string;
+      notes?: string;
+    }[]
+  ) => Promise<void>;
   deleteTransactions: (ids: string[]) => Promise<void>;
   updateTransaction: (
     id: string,
@@ -103,6 +113,35 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     } catch (err) {
       console.error('createTransaction error:', err);
       toast.error('Failed to create transaction');
+      throw err;
+    } finally {
+      set({ createLoading: false });
+    }
+  },
+
+  bulkCreateTransactions: async (rows) => {
+    try {
+      set({ createLoading: true });
+
+      for (const row of rows) {
+        const res = await fetch('/api/transactions', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(row),
+        });
+
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.message || 'Create failed');
+        }
+      }
+
+      await get().fetchTransactions();
+      toast.success(`${rows.length} transactions imported`);
+    } catch (err) {
+      console.error('bulk create error:', err);
+      toast.error('Import failed');
       throw err;
     } finally {
       set({ createLoading: false });
