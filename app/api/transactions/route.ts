@@ -31,7 +31,6 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const from = searchParams.get('from');
     const to = searchParams.get('to');
-    // const accountId = searchParams.get('accountId');
 
     await connectDB();
 
@@ -41,15 +40,10 @@ export async function GET(req: Request) {
     const startDate = from ? parseISO(from) : defaultFrom;
     const endDate = to ? parseISO(to) : defaultTo;
 
-    console.log(decoded.id);
-
     const query: any = {
       userId: decoded.id,
       date: { $gte: startDate, $lte: endDate },
     };
-
-    // if (accountId) query.accountId = accountId;
-    // else query.accountId = decoded.id;
 
     const transactions = await Transactions.find(query)
       .populate({
@@ -75,32 +69,44 @@ export async function POST(req: Request) {
   try {
     const cookiesStore = await cookies();
     const token = cookiesStore.get('token')?.value;
-
     if (!token)
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
-
-    if (!decoded?.id) {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: string;
+    };
+    if (!decoded?.id)
       return NextResponse.json(
         { message: 'Invalid token payload' },
         { status: 401 }
       );
-    }
 
     const body = await req.json();
+    console.log('Received body:', body);
+
+    // ვალიდაცია - ახლა ყველა transaction უნდა ჰქონდეს accountId და categoryId
     const validated = transactionSchema.parse(body);
 
     await connectDB();
 
-    const newTx = await Transactions.create({
-      ...validated,
+    const tx = await Transactions.create({
+      amount: validated.amount,
+      payee: validated.payee || '',
+      notes: validated.notes || '',
+      date: new Date(validated.date),
+      accountId: new mongoose.Types.ObjectId(validated.accountId),
+      categoryId: new mongoose.Types.ObjectId(validated.categoryId),
       userId: new mongoose.Types.ObjectId(decoded.id),
     });
 
-    return NextResponse.json({ transaction: newTx }, { status: 201 });
-  } catch (err) {
-    console.error('POST error:', err);
-    return NextResponse.json({ message: 'Server error' }, { status: 500 });
+    console.log('Transaction created:', tx);
+
+    return NextResponse.json({ transaction: tx }, { status: 201 });
+  } catch (err: any) {
+    console.error('POST error:', err?.errors || err);
+    return NextResponse.json(
+      { message: err?.errors ?? err?.message ?? 'Server error' },
+      { status: 400 }
+    );
   }
 }

@@ -16,6 +16,19 @@ import { useNewCategories } from '@/store/newCtgStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useNewTransaction } from '@/store/newTransactionStore';
 import { useCategoriesStore } from '@/store/useCaregoriesStore';
+import UploadButton from '@/components/atoms/transactions/UploadButton';
+import ImportCard from '@/components/molecules/transactions/ImportCard';
+
+enum VARIANTS {
+  LIST = 'LIST',
+  IMPORT = 'IMPORT',
+}
+
+const INITIAL_IMPORT_EXPORT = {
+  data: [],
+  errors: [],
+  meta: {},
+};
 
 export type AccountRow = {
   _id: string;
@@ -24,7 +37,43 @@ export type AccountRow = {
   userId: string;
 };
 
+export type ImportTransactionRow = {
+  amount: number;
+  date: string;
+  payee?: string;
+  notes?: string;
+};
+
 const TransactionsPage = () => {
+  const [variant, setVriants] = useState<VARIANTS>(VARIANTS.LIST);
+  const [importResults, setImportResults] = useState(INITIAL_IMPORT_EXPORT);
+
+  const onUpload = (result: typeof INITIAL_IMPORT_EXPORT) => {
+    console.log({ result });
+    setImportResults(result);
+    setVriants(VARIANTS.IMPORT);
+  };
+
+  const onCancelImport = () => {
+    setImportResults(INITIAL_IMPORT_EXPORT);
+    setVriants(VARIANTS.LIST);
+  };
+
+  const bulkCreateTransactions = useTransactionStore(
+    (state) => state.bulkCreateTransactions
+  );
+
+  const onSubmitImport = async (rows: ImportTransactionRow[]) => {
+    try {
+      await bulkCreateTransactions(rows);
+
+      setImportResults({ data: [], errors: [], meta: {} });
+      setVriants(VARIANTS.LIST);
+    } catch {
+      toast.error('Import failed');
+    }
+  };
+
   const fetchTransactions = useTransactionStore(
     (state) => state.fetchTransactions
   );
@@ -67,25 +116,40 @@ const TransactionsPage = () => {
     );
   }
 
+  if (variant === VARIANTS.IMPORT) {
+    return (
+      <>
+        <ImportCard
+          data={importResults.data}
+          onCancel={onCancelImport}
+          onSubmit={onSubmitImport}
+        />
+      </>
+    );
+  }
+
   return (
     <div className='max-w-screen-2xl mx-auto w-full pb-10 -mt-24'>
       <Card className='border-none drop-shadow-sm'>
         <CardHeader className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
           <CardTitle className='text-xl line-clamp-1'>
-            Caregories page
+            Transactions History
           </CardTitle>
-          <Button
-            onClick={() => {
-              setOpen();
-              fetchAccounts();
-              fetchCategories();
-            }}
-            size='sm'
-            className='w-full sm:w-auto'
-          >
-            <Plus className='size-4 mr-2' />
-            Add new
-          </Button>
+          <div className='sm:flex w-full sm:w-auto items-center gap-y-2 sm:gap-x-2 '>
+            <Button
+              onClick={() => {
+                setOpen();
+                fetchAccounts();
+                fetchCategories();
+              }}
+              size='sm'
+              className='w-full sm:w-auto'
+            >
+              <Plus className='size-4 mr-2' />
+              Add new
+            </Button>
+            <UploadButton onUpload={onUpload} />
+          </div>
         </CardHeader>
         <CardContent>
           <DataTable
