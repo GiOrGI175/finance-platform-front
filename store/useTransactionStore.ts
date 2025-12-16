@@ -32,10 +32,9 @@ interface TransactionState {
     rows: {
       amount: number;
       date: string;
-      accountId: string;
-      categoryId: string;
       payee?: string;
       notes?: string;
+      isImport?: boolean;
     }[]
   ) => Promise<void>;
   deleteTransactions: (ids: string[]) => Promise<void>;
@@ -123,24 +122,49 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     try {
       set({ createLoading: true });
 
-      for (const row of rows) {
-        const res = await fetch('/api/transactions', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(row),
-        });
+      console.log('🚀 Starting bulk import with rows:', rows);
+      console.log('📊 Total rows to import:', rows.length);
 
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.message || 'Create failed');
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        console.log(`📝 Processing row ${i + 1}/${rows.length}:`, row);
+
+        try {
+          const res = await fetch('/api/transactions', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(row),
+          });
+
+          const data = await res.json();
+          console.log(`✅ Row ${i + 1} response:`, data);
+
+          if (!res.ok) {
+            console.error(`❌ Row ${i + 1} failed:`, data);
+            errorCount++;
+            throw new Error(data.message || 'Failed to create transaction');
+          }
+
+          successCount++;
+        } catch (error) {
+          console.error(`❌ Row ${i + 1} exception:`, error);
+          errorCount++;
+          throw error;
         }
       }
 
+      console.log(
+        `✅ Import complete: ${successCount} success, ${errorCount} errors`
+      );
+
       await get().fetchTransactions();
-      toast.success(`${rows.length} transactions imported`);
+      toast.success(`${successCount} transactions imported successfully`);
     } catch (err) {
-      console.error('bulk create error:', err);
+      console.error('❌ Bulk create error:', err);
       toast.error('Import failed');
       throw err;
     } finally {
