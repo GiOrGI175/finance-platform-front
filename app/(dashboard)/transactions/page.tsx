@@ -84,7 +84,6 @@ const TransactionsPage = () => {
   const fetchAccounts = useAccountStore((state) => state.fetchAccounts);
   const setOpen = useNewTransaction((state) => state.setOpen);
 
-  // ✅ FIX: სწორი dependency array
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -100,9 +99,8 @@ const TransactionsPage = () => {
     };
 
     loadData();
-  }, [fetchTransactions, fetchCategories, fetchAccounts]); // ✅ დამატებულია dependencies
+  }, [fetchTransactions, fetchCategories, fetchAccounts]);
 
-  // Debug log
   useEffect(() => {
     console.log('transactions Data:', transactions);
   }, [transactions]);
