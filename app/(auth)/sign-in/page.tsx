@@ -1,177 +1,161 @@
 'use client';
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { signInSchema } from '@/lib/schema/signIn.schema';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Plus } from 'lucide-react';
-
-import { columns } from '@/components/molecules/transactions/columns';
-import { DataTable } from '@/components/organisms/reusable_table/DataTabel';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { useEffect, useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAccountStore } from '@/store/useAccountStore';
-import { useTransactionStore } from '@/store/useTransactionStore';
-import { useNewTransaction } from '@/store/newTransactionStore';
-import { useCategoriesStore } from '@/store/useCaregoriesStore';
-import UploadButton from '@/components/atoms/transactions/UploadButton';
-import ImportCard from '@/components/molecules/transactions/ImportCard';
+import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useAuthStore } from '@/store/authStore';
 
-enum VARIANTS {
-  LIST = 'LIST',
-  IMPORT = 'IMPORT',
-}
+type SigninFormData = z.infer<typeof signInSchema>;
 
-const INITIAL_IMPORT_EXPORT = {
-  data: [],
-  errors: [],
-  meta: {},
-};
+export default function SignIn() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-export type AccountRow = {
-  _id: string;
-  name: string;
-  plaidId?: string;
-  userId: string;
-};
+  const setAuth = useAuthStore((state) => state.setAuth);
 
-export type ImportTransactionRow = {
-  amount: number;
-  date: string;
-  payee?: string;
-  notes?: string;
-};
+  const form = useForm<SigninFormData>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
-const TransactionsPage = () => {
-  const [variant, setVriants] = useState<VARIANTS>(VARIANTS.LIST);
-  const [importResults, setImportResults] = useState(INITIAL_IMPORT_EXPORT);
-
-  const onUpload = (result: typeof INITIAL_IMPORT_EXPORT) => {
-    console.log({ result });
-    setImportResults(result);
-    setVriants(VARIANTS.IMPORT);
-  };
-
-  const onCancelImport = () => {
-    setImportResults(INITIAL_IMPORT_EXPORT);
-    setVriants(VARIANTS.LIST);
-  };
-
-  const bulkCreateTransactions = useTransactionStore(
-    (state) => state.bulkCreateTransactions
-  );
-
-  const onSubmitImport = async (rows: ImportTransactionRow[]) => {
+  async function handleOnSubmit(values: SigninFormData) {
     try {
-      await bulkCreateTransactions(rows);
-      setImportResults({ data: [], errors: [], meta: {} });
-      setVriants(VARIANTS.LIST);
-    } catch (error) {
-      console.error('Import error:', error);
-      toast.error('Import failed');
-    }
-  };
+      setLoading(true);
+      console.log('Logging in with:', values);
 
-  const fetchTransactions = useTransactionStore(
-    (state) => state.fetchTransactions
-  );
-  const transactions = useTransactionStore((state) => state.transactions);
-  const loading = useTransactionStore((state) => state.loading);
-  const deleteTransactions = useTransactionStore(
-    (state) => state.deleteTransactions
-  );
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
 
-  const fetchCategories = useCategoriesStore((state) => state.fetchCategories);
-  const fetchAccounts = useAccountStore((state) => state.fetchAccounts);
-  const setOpen = useNewTransaction((state) => state.setOpen);
+      const data = await res.json();
+      console.log('Response:', { status: res.status, data });
 
-  // ✅ FIX: სწორი dependency array
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        await Promise.all([
-          fetchTransactions(),
-          fetchCategories(),
-          fetchAccounts(),
-        ]);
-      } catch (error) {
-        console.error('Failed to load data:', error);
-        toast.error('Failed to load data');
+      if (!res.ok) {
+        throw new Error(data.message || 'Invalid credentials');
       }
-    };
 
-    loadData();
-  }, [fetchTransactions, fetchCategories, fetchAccounts]); // ✅ დამატებულია dependencies
+      setAuth(data.user);
 
-  // Debug log
-  useEffect(() => {
-    console.log('transactions Data:', transactions);
-  }, [transactions]);
-
-  if (loading) {
-    return (
-      <div className='max-w-screen-2xl mx-auto w-full pb-10 -mt-24'>
-        <Card className='border-none drop-shadow-sm'>
-          <CardHeader>
-            <Skeleton className='h-8 w-48' />
-          </CardHeader>
-          <CardContent>
-            <div className='h-[500px] w-full flex items-center justify-center'>
-              <Loader2 className='size-6 text-slate-300 animate-spin' />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (variant === VARIANTS.IMPORT) {
-    return (
-      <ImportCard
-        data={importResults.data}
-        onCancel={onCancelImport}
-        onSubmit={onSubmitImport}
-      />
-    );
+      toast.success('Login successful!');
+      router.push('/');
+    } catch (error) {
+      console.error('Login error:', error);
+      if (error instanceof Error) toast.error(error.message);
+      else toast.error('Unexpected error');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className='max-w-screen-2xl mx-auto w-full pb-10 -mt-24'>
-      <Card className='border-none drop-shadow-sm'>
-        <CardHeader className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-          <CardTitle className='text-xl line-clamp-1'>
-            Transactions History
-          </CardTitle>
-          <div className='sm:flex w-full sm:w-auto items-center gap-y-2 sm:gap-x-2 '>
-            <Button
-              onClick={() => {
-                setOpen();
-                fetchAccounts();
-                fetchCategories();
-              }}
-              size='sm'
-              className='w-full sm:w-auto'
-            >
-              <Plus className='size-4 mr-2' />
-              Add new
-            </Button>
-            <UploadButton onUpload={onUpload} />
-          </div>
+    <div className='min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4'>
+      <Card className='max-w-md w-full shadow-xl'>
+        <CardHeader className='text-center mb-5'>
+          <CardTitle className='text-2xl font-bold'>Welcome back</CardTitle>
+          <CardDescription className='text-sm text-muted-foreground'>
+            Sign in to your account
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <DataTable
-            filterKey='date'
-            columns={columns}
-            data={transactions}
-            onDelete={(row) => {
-              const ids = row.map((r) => r.original._id);
-              deleteTransactions(ids);
-            }}
-            disabled={loading}
-          />
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleOnSubmit)}
+              className='space-y-6'
+            >
+              <FormField
+                control={form.control}
+                name='email'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email Address</FormLabel>
+                    <FormControl>
+                      <Input
+                        type='email'
+                        placeholder='email@example.com'
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='password'
+                render={({ field }) => (
+                  <FormItem>
+                    <div className='flex items-center justify-between'>
+                      <FormLabel>Password</FormLabel>
+                      <Link
+                        href='/forgot-password'
+                        className='text-sm text-blue-600 hover:underline'
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+                    <FormControl>
+                      <Input
+                        type='password'
+                        placeholder='********'
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type='submit' className='w-full' disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign in'
+                )}
+              </Button>
+            </form>
+          </Form>
+
+          <CardFooter className='flex items-center justify-center mt-6'>
+            <p className='text-sm text-muted-foreground'>
+              Don’t have an account?{' '}
+              <Link href='/sign-up' className='text-blue-600 hover:underline'>
+                Sign up
+              </Link>
+            </p>
+          </CardFooter>
         </CardContent>
       </Card>
     </div>
   );
-};
-
-export default TransactionsPage;
+}
