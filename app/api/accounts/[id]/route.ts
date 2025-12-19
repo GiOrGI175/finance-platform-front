@@ -13,6 +13,9 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+// ეს ხაზი აუცილებელია ✅
+export const dynamic = 'force-dynamic';
+
 export async function PATCH(req: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
@@ -61,9 +64,9 @@ export async function DELETE(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await context.params;
-
   try {
+    const { id } = await context.params;
+
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
 
