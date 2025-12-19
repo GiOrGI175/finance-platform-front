@@ -8,11 +8,8 @@ import { columns } from '@/components/molecules/transactions/columns';
 import { DataTable } from '@/components/organisms/reusable_table/DataTabel';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
-import { useNewAccount } from '@/store/newAccStore';
-import { useAuthStore } from '@/store/authStore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAccountStore } from '@/store/useAccountStore';
-import { useNewCategories } from '@/store/newCtgStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useNewTransaction } from '@/store/newTransactionStore';
 import { useCategoriesStore } from '@/store/useCaregoriesStore';
@@ -66,10 +63,10 @@ const TransactionsPage = () => {
   const onSubmitImport = async (rows: ImportTransactionRow[]) => {
     try {
       await bulkCreateTransactions(rows);
-
       setImportResults({ data: [], errors: [], meta: {} });
       setVriants(VARIANTS.LIST);
-    } catch {
+    } catch (error) {
+      console.error('Import error:', error);
       toast.error('Import failed');
     }
   };
@@ -84,17 +81,28 @@ const TransactionsPage = () => {
   );
 
   const fetchCategories = useCategoriesStore((state) => state.fetchCategories);
-
   const fetchAccounts = useAccountStore((state) => state.fetchAccounts);
-
   const setOpen = useNewTransaction((state) => state.setOpen);
 
+  // ✅ FIX: სწორი dependency array
   useEffect(() => {
-    fetchTransactions();
-    fetchCategories();
-    fetchAccounts();
-  }, []);
+    const loadData = async () => {
+      try {
+        await Promise.all([
+          fetchTransactions(),
+          fetchCategories(),
+          fetchAccounts(),
+        ]);
+      } catch (error) {
+        console.error('Failed to load data:', error);
+        toast.error('Failed to load data');
+      }
+    };
 
+    loadData();
+  }, [fetchTransactions, fetchCategories, fetchAccounts]); // ✅ დამატებულია dependencies
+
+  // Debug log
   useEffect(() => {
     console.log('transactions Data:', transactions);
   }, [transactions]);
@@ -118,13 +126,11 @@ const TransactionsPage = () => {
 
   if (variant === VARIANTS.IMPORT) {
     return (
-      <>
-        <ImportCard
-          data={importResults.data}
-          onCancel={onCancelImport}
-          onSubmit={onSubmitImport}
-        />
-      </>
+      <ImportCard
+        data={importResults.data}
+        onCancel={onCancelImport}
+        onSubmit={onSubmitImport}
+      />
     );
   }
 
