@@ -12,29 +12,23 @@ type Props = {
 const DashboardLayout = ({ children }: Props) => {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const res = await fetch('/api/auth/me', {
-          method: 'GET',
           credentials: 'include',
           cache: 'no-store',
         });
-
-        console.log('Auth check response:', res.status);
-
-        if (res.status === 401 || res.status === 403) {
-          router.replace('/sign-in');
-          return;
-        }
 
         if (!res.ok) {
           router.replace('/sign-in');
           return;
         }
-      } catch (err) {
-        console.error('Auth check failed:', err);
+
+        setIsAuthorized(true);
+      } catch {
         router.replace('/sign-in');
       } finally {
         setIsChecking(false);
@@ -46,13 +40,13 @@ const DashboardLayout = ({ children }: Props) => {
 
   if (isChecking) {
     return (
-      <div className='flex items-center justify-center h-screen text-gray-500'>
-        <div className='h-[500px] w-full flex items-center justify-center'>
-          <Loader2 className='size-[50px] text-slate-300 animate-spin' />
-        </div>
+      <div className='flex items-center justify-center h-screen'>
+        <Loader2 className='size-10 animate-spin text-slate-300' />
       </div>
     );
   }
+
+  if (!isAuthorized) return null;
 
   return (
     <>
